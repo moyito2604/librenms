@@ -49,7 +49,7 @@
             <div class="form-group" data-toggle="tooltip" data-container="body" data-placement="bottom" title="{{ __('device.edit.display_title', ['sysName' => $device->sysName]) }}" >
                 <label for="edit-display-input" class="col-sm-2 control-label" >{{ __('device.edit.display_name') }}</label>
                 <div class="col-sm-6">
-                    <input type="text" id="edit-display-input" name="display" class="form-control" placeholder="{{ __('device.edit.system_default') }}" value="{{ old('display', $device->display) }}">
+                    <input type="text" id="edit-display-input" name="display_template" class="form-control" placeholder="{{ __('device.edit.system_default') }}" value="{{ old('display_template', $device->display_template) }}">
                 </div>
             </div>
 
@@ -217,9 +217,6 @@
         <br />
         <div class="panel panel-default">
             <div class="panel-heading">
-                @if($rrd_num)
-                {{ __('device.edit.size_on_disk') }}: <b>{{ $rrd_size }}</b> in <b>{{ $rrd_num }}</b> {{ __('device.edit.rrd_files') }} |
-                @endif
                 {{ __('device.edit.last_polled') }}: <b>{{ $device->last_polled ? \LibreNMS\Util\Time::format($device->last_polled, 'byminute') : $device->last_polled }}</b>
                 @if($device->last_discovered)
                     | {{ __('device.edit.last_discovered') }}: <b>{{ $device->last_discovered ? \LibreNMS\Util\Time::format($device->last_discovered, 'byminute') : $device->last_discovered }}</b>

@@ -55,6 +55,12 @@ if (count($bgpPeersCache) > 0 || count($bgpPeersCache_ietf) == 0) {
     $bgpPeersDesc = snmpwalk_cache_oid($device, 'hwBgpPeerSessionExtDescription', [], 'HUAWEI-BGP-VPN-MIB');
 
     foreach ($bgpPeersCache as $key => $value) {
+        // Huawei reports some AFI/SAFI rows, such as VPLS, only in prefix-counter columns with no peer AS.
+        // Drop them before the IP-only keying below overwrites the real peer entry.
+        if (! isset($value['hwBgpPeerRemoteAs'])) {
+            continue;
+        }
+
         $oid = explode('.', (string) $key);
         $vrfInstance = $value['hwBgpPeerVrfName'];
         if ($oid[0] == 0) {
@@ -98,6 +104,7 @@ if (count($bgpPeersCache) > 0 || count($bgpPeersCache_ietf) == 0) {
                     'device_id' => $device['device_id'],
                     'vrf_id' => $vrfId,
                     'bgpPeerIdentifier' => $address,
+                    'context_name' => '',
                     'bgpPeerRemoteAs' => $value['hwBgpPeerRemoteAs'] ?? '',
                     'bgpPeerState' => $value['hwBgpPeerState'] ?? '',
                     'bgpPeerAdminStatus' => $value['hwBgpPeerAdminStatus'] ?? '',

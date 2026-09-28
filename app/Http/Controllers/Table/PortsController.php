@@ -58,19 +58,7 @@ class PortsController extends TableController
             'location' => 'nullable|integer',
             'port_descr_type' => 'nullable|string',
             'state' => 'nullable|in:up,down,admindown',
-            'filter' => ['nullable', 'array'],
-            'filter.*' => [
-                'array',
-                function ($attribute, $value, $fail): void {
-                    $allowedOps = ['eq', 'neq', 'contains', 'starts_with', 'gt', 'lt', 'in', 'not_in', 'is_empty'];
-                    $operator = array_key_first($value);
-
-                    if (! in_array($operator, $allowedOps)) {
-                        $fail("The operator '{$operator}' is not supported.");
-                    }
-                },
-            ],
-            'filter.*.*' => ['nullable', 'max:255'],
+            ...Port::filterValidationRules(),
         ];
     }
 
@@ -116,6 +104,8 @@ class PortsController extends TableController
 
     protected function baseQuery($request): Builder
     {
+        $this->authorize('viewAny', Port::class);
+
         $query = Port::hasAccess($request->user())
             ->with(['device', 'device.location'])
             ->leftJoin('devices', 'ports.device_id', 'devices.device_id')
@@ -155,9 +145,12 @@ class PortsController extends TableController
      */
     public function formatItem(Model $model): array
     {
-        $status = $model->ifOperStatus == IfOperStatus::Down
-            ? ($model->ifAdminStatus == IfOperStatus::Up ? 'label-danger' : 'label-warning')
-            : 'label-success';
+        $status = match ($model->ifOperStatus) {
+            IfOperStatus::Up => 'label-success',
+            IfOperStatus::Down, IfOperStatus::LowerLayerDown => $model->ifAdminStatus === IfOperStatus::Up ? 'label-danger' : 'label-default',
+            IfOperStatus::Testing => 'label-info',
+            default => 'label-default',
+        };
 
         return [
             'status' => $status,

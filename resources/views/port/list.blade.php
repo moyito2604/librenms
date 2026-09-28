@@ -1,5 +1,5 @@
 
-<template id="port-filter-template"><x-filter name="ports" :fields="$filterFields" id="port-filter" :hide="$hideFilter"/></template>
+<template id="port-filter-template"><x-filter name="ports" :fields="$filterFields" id="port-filter" :hide="$hideFilter" :initial="$filter" /></template>
 
 <div class="table-responsive">
     <table id="ports" class="table table-condensed table-hover table-striped" data-url="{{ route('table.ports') }}">
@@ -106,7 +106,6 @@
     }
 
     $(window).on('filter:apply', function (event) {
-        console.log(event);
         if (event.originalEvent.detail.name === 'ports') {
             filter = event.originalEvent.detail.filters;
             grid.bootgrid('reload');
